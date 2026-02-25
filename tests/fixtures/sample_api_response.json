@@ -1,0 +1,70 @@
+{
+  "count": 3,
+  "patentFileWrapperDataBag": [
+    {
+      "applicationNumberText": "29900001",
+      "applicationMetaData": {
+        "patentNumber": "D1012345",
+        "inventionTitle": "Eyeglasses Frame",
+        "filingDate": "2025-06-15",
+        "grantDate": "2026-02-18",
+        "applicationTypeLabelName": "Design",
+        "applicationStatusCode": 150,
+        "applicationStatusDescriptionText": "Patented Case",
+        "uspcSymbolText": "D16/300",
+        "cpcClassificationBag": ["G02C 1/00"],
+        "class": "D16",
+        "firstInventorName": "Smith, John A.",
+        "firstApplicantName": "Acme Eyewear Inc.",
+        "inventorBag": [
+          {"inventorNameText": "Smith, John A."},
+          {"inventorNameText": "Doe, Jane B."}
+        ],
+        "effectiveFilingDate": "2025-06-15"
+      }
+    },
+    {
+      "applicationNumberText": "29900002",
+      "applicationMetaData": {
+        "patentNumber": "D1012346",
+        "inventionTitle": "Sunglasses",
+        "filingDate": "2025-07-20",
+        "grantDate": "2026-02-18",
+        "applicationTypeLabelName": "Design",
+        "applicationStatusCode": 150,
+        "applicationStatusDescriptionText": "Patented Case",
+        "uspcSymbolText": "D16/302",
+        "cpcClassificationBag": ["G02C 5/00"],
+        "class": "D16",
+        "firstInventorName": "Lee, Chris",
+        "firstApplicantName": "SunVision Corp.",
+        "inventorBag": [
+          {"inventorNameText": "Lee, Chris"}
+        ],
+        "effectiveFilingDate": "2025-07-20"
+      }
+    },
+    {
+      "applicationNumberText": "29900003",
+      "applicationMetaData": {
+        "patentNumber": "D1012347",
+        "inventionTitle": "Table Lamp",
+        "filingDate": "2025-05-10",
+        "grantDate": "2026-02-18",
+        "applicationTypeLabelName": "Design",
+        "applicationStatusCode": 150,
+        "applicationStatusDescriptionText": "Patented Case",
+        "uspcSymbolText": "D26/100",
+        "cpcClassificationBag": ["F21S 8/00"],
+        "class": "D26",
+        "firstInventorName": "Brown, Alice",
+        "firstApplicantName": "LightCo LLC",
+        "inventorBag": [
+          {"inventorNameText": "Brown, Alice"}
+        ],
+        "effectiveFilingDate": "2025-05-10"
+      }
+    }
+  ],
+  "requestIdentifier": "test-fixture-id"
+}

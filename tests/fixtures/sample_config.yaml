@@ -1,0 +1,56 @@
+api:
+  base_url: "https://api.uspto.gov"
+  rate_limit_per_minute: 50
+  timeout_seconds: 30
+  max_retries: 3
+
+search_criteria:
+  - name: "Eyewear Design Patents"
+    us_classes:
+      - "D16/300"
+      - "D16/301"
+      - "D16/302"
+    cpc_classes:
+      - "G02C"
+    keywords:
+      - "eyeglasses"
+      - "sunglasses"
+    assignee_exclude:
+      - "Our Company"
+
+initial_lookback_days: 30
+
+notifications:
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    recipients:
+      - "test@example.com"
+  pgr_reminder_months:
+    - 6
+    - 8
+
+sources:
+  uspto_api: true
+  official_gazette: false
+
+database:
+  path: ":memory:"
+
+logging:
+  level: "DEBUG"
+  file: ""
+
+ai:
+  enabled: false
+  model: "claude-sonnet-4-20250514"
+  rate_limit_per_minute: 10
+  product_images_dir: "/tmp/test_product_images"
+  similarity_threshold: 30
+  max_product_images: 3
+
+web:
+  host: "127.0.0.1"
+  port: 8080

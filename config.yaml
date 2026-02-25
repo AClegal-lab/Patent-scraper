@@ -1,0 +1,87 @@
+# Patent Monitor Configuration
+# Edit this file to customize your monitoring criteria.
+
+# USPTO API settings
+api:
+  base_url: "https://api.uspto.gov"
+  rate_limit_per_minute: 50       # Stay under the 60/min API limit
+  timeout_seconds: 30
+  max_retries: 3
+
+# Search criteria — add as many categories as you need.
+# A patent matches if it hits ANY of: us_classes, cpc_classes, or keywords.
+search_criteria:
+  - name: "Eyewear Design Patents"
+    us_classes:
+      - "D16/300"       # Eyeglasses
+      - "D16/301"       # Spectacle frames
+      - "D16/302"       # Sunglass frames
+    cpc_classes:
+      - "G02C"          # Spectacles; sunglasses or goggles
+      - "G02C 1/"       # Assemblies of lenses with spectacle frames
+      - "G02C 5/"       # Constructions of non-optical parts
+    keywords:
+      - "eyeglasses"
+      - "spectacles"
+      - "eyewear"
+      - "sunglasses"
+      - "optical frame"
+      - "sunglass"
+    assignee_exclude: []
+    # Example: exclude your own company's filings
+    # assignee_exclude:
+    #   - "Your Company Name"
+
+# How far back to search on the very first run (days)
+initial_lookback_days: 90
+
+# Notification settings
+notifications:
+  email:
+    enabled: true
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    # SMTP credentials are loaded from .env (SMTP_USER, SMTP_PASSWORD)
+    recipients:
+      - "your-email@example.com"
+
+  # When to send PGR deadline reminders (months after patent issuance)
+  pgr_reminder_months:
+    - 6       # First reminder
+    - 8       # Second reminder
+    - 8.5     # Urgent reminder
+
+# Data sources to use
+sources:
+  uspto_api: true
+  official_gazette: true
+
+# Database location
+database:
+  path: "data/patents.db"
+
+# Logging
+logging:
+  level: "INFO"
+  file: "logs/patent-monitor.log"
+  max_size_mb: 10
+  backup_count: 5
+
+# AI-powered design analysis (uses Anthropic Claude API with vision)
+# Compares patent drawings against your product images to assess similarity
+ai:
+  enabled: false                          # Set to true to enable (costs money per patent analyzed)
+  # ANTHROPIC_API_KEY is loaded from .env
+  model: "claude-sonnet-4-20250514"       # Or "claude-haiku-4-20250414" for lower cost
+  rate_limit_per_minute: 10
+  max_tokens: 1024
+  timeout_seconds: 60
+  product_images_dir: "data/product_images"  # Put your product photos here
+  similarity_threshold: 30                # Auto-dismiss patents scoring below this
+  max_product_images: 3                   # Max product images per analysis (controls cost)
+
+# Web UI settings
+web:
+  host: "127.0.0.1"
+  port: 8080

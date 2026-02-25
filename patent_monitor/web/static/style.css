@@ -1,0 +1,245 @@
+/* Patent Monitor custom styles (extends Pico CSS) */
+
+/* Stats cards */
+.stat-card {
+    text-align: center;
+    padding: 1rem;
+}
+.stat-card header {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.stat-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0.25rem 0;
+}
+.stat-text {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+.stat-danger { color: #e53e3e; }
+.stat-warning { color: #dd6b20; }
+
+/* Date range picker */
+.date-range {
+    margin-bottom: 1rem;
+}
+.date-range .grid {
+    margin-bottom: 0;
+}
+.date-range label {
+    margin-bottom: 0;
+}
+.date-range small {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--pico-muted-color);
+    font-weight: 600;
+}
+.date-range input[type="date"] {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* Action buttons */
+.action-buttons article {
+    text-align: center;
+    padding: 1.5rem;
+}
+.action-btn {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 0.9rem 1.5rem;
+    font-weight: 600;
+}
+.action-desc {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+    margin-top: 0.5rem;
+}
+.scan-btn {
+    background: #2b6cb0;
+    border-color: #2b6cb0;
+}
+.analyze-btn {
+    background: #6b46c1;
+    border-color: #6b46c1;
+}
+
+/* Task status messages */
+.task-status {
+    margin-top: 0.5rem;
+    min-height: 1.5rem;
+}
+.task-status .success { color: #38a169; }
+.task-status .error { color: #e53e3e; }
+
+/* Score badges */
+.score-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+.score-high { background: #fed7d7; color: #9b2c2c; }
+.score-medium { background: #fefcbf; color: #975a16; }
+.score-low { background: #c6f6d5; color: #276749; }
+.score-none { background: #e2e8f0; color: #4a5568; }
+.score-pending { background: #e2e8f0; color: #a0aec0; }
+
+/* Risk labels */
+.risk-label {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.risk-high { background: #fed7d7; color: #9b2c2c; }
+.risk-medium { background: #fefcbf; color: #975a16; }
+.risk-low { background: #c6f6d5; color: #276749; }
+.risk-none { background: #e2e8f0; color: #4a5568; }
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.status-new { background: #bee3f8; color: #2a4365; }
+.status-reviewed { background: #e9d8fd; color: #553c9a; }
+.status-flagged { background: #fed7d7; color: #9b2c2c; }
+.status-dismissed { background: #e2e8f0; color: #718096; }
+
+/* Urgency badges */
+.urgency-badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+.urgency-high { background: #fed7d7; color: #9b2c2c; }
+.urgency-medium { background: #fefcbf; color: #975a16; }
+.urgency-low { background: #c6f6d5; color: #276749; }
+.urgency-expired { background: #e2e8f0; color: #718096; }
+
+/* Deadline colors */
+.deadline-urgent { color: #e53e3e; font-weight: 600; }
+.deadline-warning { color: #dd6b20; }
+.deadline-ok { color: #38a169; }
+
+/* Detail page */
+.detail-row {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+.detail-label {
+    flex: 0 0 140px;
+    font-weight: 600;
+    color: var(--pico-muted-color);
+    font-size: 0.85rem;
+}
+.detail-value {
+    flex: 1;
+}
+
+/* Match tags */
+.match-tag {
+    display: inline-block;
+    background: #ebf8ff;
+    color: #2b6cb0;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    margin: 0.15rem;
+    font-size: 0.8rem;
+}
+
+/* AI Analysis */
+.analysis-score-container {
+    text-align: center;
+    padding: 1.5rem 0;
+}
+.analysis-score {
+    font-size: 3rem;
+    font-weight: 700;
+    display: block;
+}
+.analysis-label {
+    font-size: 0.85rem;
+    color: var(--pico-muted-color);
+}
+.analysis-meta {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--pico-muted-color);
+}
+
+/* Recommendation badges */
+.rec-badge {
+    display: inline-block;
+    padding: 0.2rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+.rec-flag { background: #fed7d7; color: #9b2c2c; }
+.rec-monitor { background: #fefcbf; color: #975a16; }
+.rec-dismiss { background: #c6f6d5; color: #276749; }
+
+/* Status change buttons */
+.status-btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+}
+
+/* Patent images */
+.patent-image-card {
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+}
+.patent-image-container {
+    text-align: center;
+    min-height: 100px;
+    background: #f7fafc;
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+.patent-image-container img {
+    max-width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+}
+.image-unavailable {
+    color: var(--pico-muted-color);
+    font-style: italic;
+    padding: 2rem;
+}
+
+/* Thumbnail images in tables */
+.thumb-col {
+    width: 180px;
+}
+.thumb-cell {
+    padding: 0.25rem;
+    width: 180px;
+    text-align: center;
+}
+.patent-thumb {
+    width: 176px;
+    height: 176px;
+    object-fit: contain;
+    border-radius: 3px;
+    background: #f7fafc;
+}

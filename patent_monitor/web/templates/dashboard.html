@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Patent Monitor{% endblock %}
+
+{% block content %}
+<h2>Dashboard</h2>
+
+<!-- Stats Row -->
+<div class="grid">
+    <article class="stat-card">
+        <header>Total Patents</header>
+        <p class="stat-number">{{ stats.total_patents }}</p>
+    </article>
+    <article class="stat-card">
+        <header>High Risk</header>
+        <p class="stat-number stat-danger">{{ stats.high_risk_count }}</p>
+    </article>
+    <article class="stat-card">
+        <header>Pending AI</header>
+        <p class="stat-number stat-warning">{{ stats.pending_analysis }}</p>
+    </article>
+    <article class="stat-card">
+        <header>Last Scan</header>
+        <p class="stat-text">
+            {% if stats.last_scan_date %}
+                {{ stats.last_scan_date.strftime('%b %d, %Y') }}
+            {% else %}
+                Never
+            {% endif %}
+        </p>
+    </article>
+</div>
+
+<!-- Action Buttons -->
+<div class="grid action-buttons">
+    <article>
+        <div class="date-range">
+            <div class="grid">
+                <label>
+                    <small>From</small>
+                    <input type="date" id="scan-date-from" value="{{ date_from }}">
+                </label>
+                <label>
+                    <small>To</small>
+                    <input type="date" id="scan-date-to" value="{{ date_to }}">
+                </label>
+            </div>
+        </div>
+        <button id="btn-scan" class="action-btn scan-btn" {% if has_running_task %}disabled aria-busy="true"{% endif %}>
+            Scan for Patents
+        </button>
+        <p class="action-desc">Search USPTO for new design patents matching your criteria</p>
+        <div id="scan-status" class="task-status"></div>
+    </article>
+    {% if ai_enabled %}
+    <article>
+        <button id="btn-analyze" class="action-btn analyze-btn" {% if has_running_task %}disabled aria-busy="true"{% endif %}>
+            AI Analyze
+        </button>
+        <p class="action-desc">Compare unanalyzed patents against your product images</p>
+        <div id="analyze-status" class="task-status"></div>
+    </article>
+    {% else %}
+    <article>
+        <button class="action-btn" disabled>AI Analyze (Disabled)</button>
+        <p class="action-desc">Enable AI analysis in config.yaml and set your ANTHROPIC_API_KEY</p>
+    </article>
+    {% endif %}
+</div>
+
+<!-- Recent Patents -->
+<h3>Recent Patents
+    {% if request.args.get('date_from') %}
+    <small style="font-weight:normal; font-size:0.7em; margin-left:0.5rem;">({{ request.args.get('date_from') }} to {{ request.args.get('date_to') }}) &mdash; <a href="/">show all</a></small>
+    {% endif %}
+</h3>
+{% if patents_with_analysis %}
+<figure>
+<table>
+    <thead>
+        <tr>
+            <th class="thumb-col"></th>
+            <th>Patent Number</th>
+            <th>Title</th>
+            <th>Issue Date</th>
+            <th>PGR Deadline</th>
+            <th>Assignee</th>
+            <th>AI Score</th>
+            <th>Risk</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for patent, analysis in patents_with_analysis %}
+        <tr>
+            <td class="thumb-cell"><img class="patent-thumb" src="{{ url_for('main.api_patent_image', patent_number=patent.patent_number) }}" alt="" loading="lazy" onerror="this.style.display='none'"></td>
+            <td><a href="{{ patent.uspto_url }}" target="_blank">{{ patent.patent_number }}</a></td>
+            <td><a href="{{ url_for('main.patent_detail', patent_number=patent.patent_number) }}">{{ patent.title[:50] }}{% if patent.title|length > 50 %}...{% endif %}</a></td>
+            <td>{{ patent.issue_date.strftime('%Y-%m-%d') }}</td>
+            <td class="{% if patent.pgr_months_remaining < 3 %}deadline-urgent{% elif patent.pgr_months_remaining < 6 %}deadline-warning{% else %}deadline-ok{% endif %}">
+                {{ patent.pgr_deadline.strftime('%Y-%m-%d') }}
+            </td>
+            <td>{% if patent.assignee %}{{ patent.assignee[:25] }}{% if patent.assignee|length > 25 %}...{% endif %}{% elif patent.inventors %}{{ patent.inventors[0][:25] }}{% if patent.inventors[0]|length > 25 %}...{% endif %}{% endif %}</td>
+            <td>
+                {% if analysis %}
+                <span class="score-badge score-{{ analysis.risk_level }}">{{ analysis.similarity_score }}%</span>
+                {% else %}
+                <span class="score-badge score-pending">--</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if analysis %}
+                <span class="risk-label risk-{{ analysis.risk_level }}">{{ analysis.risk_level|upper }}</span>
+                {% else %}
+                <span class="risk-label">Pending</span>
+                {% endif %}
+            </td>
+            <td><span class="status-badge status-{{ patent.status }}">{{ patent.status }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+<p><a href="{{ url_for('main.patent_list') }}">View all patents &rarr;</a></p>
+{% else %}
+<p>No patents found yet. Click <strong>Scan for Patents</strong> to search for new design patents.</p>
+{% endif %}
+
+<!-- Recent Runs -->
+{% if stats.recent_runs %}
+<h3>Recent Scan Activity</h3>
+<figure>
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Source</th>
+            <th>Results</th>
+            <th>New Matches</th>
+            <th>Duration</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for run in stats.recent_runs %}
+        <tr>
+            <td>{{ run.run_at[:19] }}</td>
+            <td>{{ run.source|upper }}</td>
+            <td>{{ run.results_count or 0 }}</td>
+            <td>{{ run.new_matches_count or 0 }}</td>
+            <td>{{ "%.1f"|format(run.duration_seconds or 0) }}s</td>
+            <td>{% if run.error %}<span class="risk-label risk-high">Error</span>{% else %}<span class="risk-label risk-none">OK</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Task polling logic
+function startTask(endpoint, statusElementId, buttonId, body) {
+    const btn = document.getElementById(buttonId);
+    const statusEl = document.getElementById(statusElementId);
+
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    statusEl.innerHTML = '<small>Starting...</small>';
+
+    const fetchOpts = { method: 'POST' };
+    if (body) {
+        fetchOpts.headers = { 'Content-Type': 'application/json' };
+        fetchOpts.body = JSON.stringify(body);
+    }
+
+    fetch(endpoint, fetchOpts)
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                statusEl.innerHTML = '<small class="error">' + data.error + '</small>';
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
+                return;
+            }
+            pollTask(data.task_id, statusElementId, buttonId);
+        })
+        .catch(err => {
+            statusEl.innerHTML = '<small class="error">Request failed: ' + err + '</small>';
+            btn.disabled = false;
+            btn.removeAttribute('aria-busy');
+        });
+}
+
+function pollTask(taskId, statusElementId, buttonId) {
+    const statusEl = document.getElementById(statusElementId);
+    const btn = document.getElementById(buttonId);
+
+    const poll = () => {
+        fetch('/api/tasks/' + taskId)
+            .then(r => r.json())
+            .then(data => {
+                statusEl.innerHTML = '<small>' + (data.message || data.status) + '</small>';
+
+                if (data.status === 'running') {
+                    setTimeout(poll, 1500);
+                } else if (data.status === 'completed') {
+                    let resultMsg = 'Done!';
+                    if (data.result) {
+                        if (data.result.new_matches !== undefined) {
+                            resultMsg = data.result.total_fetched + ' fetched, ' + data.result.new_matches + ' new matches (' + data.result.duration + ')';
+                        } else if (data.result.analyzed_count !== undefined) {
+                            resultMsg = data.result.analyzed_count + ' analyzed (' + data.result.duration + ')';
+                        }
+                    }
+                    statusEl.innerHTML = '<small class="success">' + resultMsg + '</small>';
+                    btn.disabled = false;
+                    btn.removeAttribute('aria-busy');
+                    // Reload with date filters so only matching patents show
+                    setTimeout(() => {
+                        const df = document.getElementById('scan-date-from').value;
+                        const dt = document.getElementById('scan-date-to').value;
+                        const params = new URLSearchParams();
+                        if (df) params.set('date_from', df);
+                        if (dt) params.set('date_to', dt);
+                        window.location.href = '/?' + params.toString();
+                    }, 2000);
+                } else if (data.status === 'failed') {
+                    statusEl.innerHTML = '<small class="error">Failed: ' + (data.error || 'Unknown error') + '</small>';
+                    btn.disabled = false;
+                    btn.removeAttribute('aria-busy');
+                }
+            })
+            .catch(err => {
+                statusEl.innerHTML = '<small class="error">Polling failed</small>';
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
+            });
+    };
+
+    poll();
+}
+
+document.getElementById('btn-scan')?.addEventListener('click', function() {
+    const dateFrom = document.getElementById('scan-date-from').value;
+    const dateTo = document.getElementById('scan-date-to').value;
+    const body = {};
+    if (dateFrom) body.date_from = dateFrom;
+    if (dateTo) body.date_to = dateTo;
+    startTask('/api/scan', 'scan-status', 'btn-scan', body);
+});
+
+document.getElementById('btn-analyze')?.addEventListener('click', function() {
+    startTask('/api/analyze', 'analyze-status', 'btn-analyze');
+});
+</script>
+{% endblock %}

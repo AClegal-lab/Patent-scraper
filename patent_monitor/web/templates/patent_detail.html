@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patent.patent_number }} - Patent Monitor{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h2>{{ patent.patent_number }}</h2>
+    <p>{{ patent.title }}</p>
+</hgroup>
+
+<!-- Status and Actions -->
+<div class="grid">
+    <div>
+        <span class="status-badge status-{{ patent.status }}">{{ patent.status|upper }}</span>
+        <span class="urgency-badge urgency-{{ patent.urgency }}">{{ patent.urgency|upper }} urgency</span>
+    </div>
+    <div style="text-align: right;">
+        <div role="group">
+            <button class="status-btn" onclick="updateStatus('{{ patent.patent_number }}', 'flagged')">Flag</button>
+            <button class="status-btn secondary" onclick="updateStatus('{{ patent.patent_number }}', 'reviewed')">Review</button>
+            <button class="status-btn outline" onclick="updateStatus('{{ patent.patent_number }}', 'dismissed')">Dismiss</button>
+        </div>
+    </div>
+</div>
+
+<!-- Patent Design Image -->
+<article class="patent-image-card">
+    <header>Design Drawing</header>
+    <div class="patent-image-container" id="patent-image-container">
+        <img id="patent-image"
+             src="{{ url_for('main.api_patent_image', patent_number=patent.patent_number) }}"
+             alt="Design drawing for {{ patent.patent_number }}"
+             loading="lazy"
+             onerror="this.parentElement.innerHTML='<p class=\'image-unavailable\'>Design image not available</p>'"
+             onload="if(this.naturalWidth===0)this.onerror()">
+    </div>
+</article>
+
+<div class="grid">
+    <!-- Patent Details Card -->
+    <article>
+        <header>Patent Details</header>
+
+        <div class="detail-row">
+            <span class="detail-label">Patent Number</span>
+            <span class="detail-value"><a href="{{ patent.uspto_url }}" target="_blank">{{ patent.patent_number }}</a></span>
+        </div>
+
+        {% if patent.application_number %}
+        <div class="detail-row">
+            <span class="detail-label">Application Number</span>
+            <span class="detail-value">{{ patent.application_number }}</span>
+        </div>
+        {% endif %}
+
+        <div class="detail-row">
+            <span class="detail-label">Issue Date</span>
+            <span class="detail-value">{{ patent.issue_date.strftime('%B %d, %Y') }}</span>
+        </div>
+
+        {% if patent.filing_date %}
+        <div class="detail-row">
+            <span class="detail-label">Filing Date</span>
+            <span class="detail-value">{{ patent.filing_date.strftime('%B %d, %Y') }}</span>
+        </div>
+        {% endif %}
+
+        <div class="detail-row">
+            <span class="detail-label">PGR Deadline</span>
+            <span class="detail-value {% if patent.pgr_months_remaining < 3 %}deadline-urgent{% elif patent.pgr_months_remaining < 6 %}deadline-warning{% else %}deadline-ok{% endif %}">
+                {{ patent.pgr_deadline.strftime('%B %d, %Y') }}
+                ({{ "%.1f"|format(patent.pgr_months_remaining) }} months remaining)
+            </span>
+        </div>
+
+        {% if patent.assignee %}
+        <div class="detail-row">
+            <span class="detail-label">Assignee</span>
+            <span class="detail-value">{{ patent.assignee }}</span>
+        </div>
+        {% endif %}
+
+        {% if patent.inventors %}
+        <div class="detail-row">
+            <span class="detail-label">Inventors</span>
+            <span class="detail-value">{{ patent.inventors | join(', ') }}</span>
+        </div>
+        {% endif %}
+
+        {% if patent.classification_us %}
+        <div class="detail-row">
+            <span class="detail-label">US Classification</span>
+            <span class="detail-value">{{ patent.classification_us }}</span>
+        </div>
+        {% endif %}
+
+        {% if patent.classification_cpc %}
+        <div class="detail-row">
+            <span class="detail-label">CPC Classification</span>
+            <span class="detail-value">{{ patent.classification_cpc }}</span>
+        </div>
+        {% endif %}
+
+        {% if patent.abstract %}
+        <div class="detail-row">
+            <span class="detail-label">Abstract</span>
+            <span class="detail-value">{{ patent.abstract }}</span>
+        </div>
+        {% endif %}
+
+        {% if matched_criteria %}
+        <div class="detail-row">
+            <span class="detail-label">Matched Criteria</span>
+            <span class="detail-value">
+                {% for criteria in matched_criteria %}
+                <span class="match-tag">{{ criteria }}</span>
+                {% endfor %}
+            </span>
+        </div>
+        {% endif %}
+    </article>
+
+    <!-- AI Analysis Card -->
+    <article>
+        <header>AI Design Analysis</header>
+
+        {% if analysis %}
+        <div class="analysis-score-container">
+            <span class="analysis-score score-{{ analysis.risk_level }}">{{ analysis.similarity_score }}%</span>
+            <span class="analysis-label">similarity to your products</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Risk Level</span>
+            <span class="risk-label risk-{{ analysis.risk_level }}">{{ analysis.risk_level|upper }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Recommendation</span>
+            <span class="rec-badge rec-{{ analysis.recommendation }}">{{ analysis.recommendation|upper }}</span>
+        </div>
+
+        <div class="detail-row">
+            <span class="detail-label">Reasoning</span>
+            <span class="detail-value">{{ analysis.reasoning }}</span>
+        </div>
+
+        <div class="analysis-meta">
+            {% if analysis.patent_image_used %}Visual + text analysis{% else %}Text-only analysis (no patent image available){% endif %}
+            &middot; {{ analysis.product_images_used|length if analysis.product_images_used else 0 }} product image(s) compared
+            {% if analysis.analyzed_at %}
+            &middot; Analyzed: {{ analysis.analyzed_at[:19] }}
+            {% endif %}
+        </div>
+
+        {% elif ai_enabled %}
+        <p>This patent has not been analyzed yet.</p>
+        <button id="btn-analyze-single" onclick="analyzeSingle('{{ patent.patent_number }}')">
+            Analyze This Patent
+        </button>
+        <div id="single-analysis-status" class="task-status"></div>
+
+        {% else %}
+        <p>AI analysis is not enabled. Enable it in config.yaml and set your ANTHROPIC_API_KEY.</p>
+        {% endif %}
+    </article>
+</div>
+
+<p><a href="{{ url_for('main.patent_list') }}">&larr; Back to patent list</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateStatus(patentNumber, newStatus) {
+    fetch('/api/patents/' + patentNumber + '/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => alert('Request failed: ' + err));
+}
+
+function analyzeSingle(patentNumber) {
+    const btn = document.getElementById('btn-analyze-single');
+    const statusEl = document.getElementById('single-analysis-status');
+
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    statusEl.innerHTML = '<small>Starting analysis...</small>';
+
+    fetch('/api/analyze/' + patentNumber, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.error) {
+                statusEl.innerHTML = '<small class="error">' + data.error + '</small>';
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
+                return;
+            }
+            pollAnalysis(data.task_id, statusEl, btn);
+        })
+        .catch(err => {
+            statusEl.innerHTML = '<small class="error">Request failed: ' + err + '</small>';
+            btn.disabled = false;
+            btn.removeAttribute('aria-busy');
+        });
+}
+
+function pollAnalysis(taskId, statusEl, btn) {
+    const poll = () => {
+        fetch('/api/tasks/' + taskId)
+            .then(r => r.json())
+            .then(data => {
+                statusEl.innerHTML = '<small>' + (data.message || data.status) + '</small>';
+
+                if (data.status === 'running') {
+                    setTimeout(poll, 1500);
+                } else if (data.status === 'completed') {
+                    statusEl.innerHTML = '<small class="success">Analysis complete!</small>';
+                    setTimeout(() => location.reload(), 1000);
+                } else if (data.status === 'failed') {
+                    statusEl.innerHTML = '<small class="error">Failed: ' + (data.error || 'Unknown error') + '</small>';
+                    btn.disabled = false;
+                    btn.removeAttribute('aria-busy');
+                }
+            })
+            .catch(err => {
+                statusEl.innerHTML = '<small class="error">Polling failed</small>';
+                btn.disabled = false;
+                btn.removeAttribute('aria-busy');
+            });
+    };
+    poll();
+}
+</script>
+{% endblock %}

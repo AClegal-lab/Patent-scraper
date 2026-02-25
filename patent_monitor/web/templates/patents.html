@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Patents - Patent Monitor{% endblock %}
+
+{% block content %}
+<h2>Patents ({{ total }} total)</h2>
+
+<!-- Filters -->
+<details>
+    <summary>Filters</summary>
+    <form method="get" action="{{ url_for('main.patent_list') }}">
+        <div class="grid">
+            <label>
+                Status
+                <select name="status">
+                    <option value="">All</option>
+                    <option value="new" {% if status_filter == 'new' %}selected{% endif %}>New</option>
+                    <option value="reviewed" {% if status_filter == 'reviewed' %}selected{% endif %}>Reviewed</option>
+                    <option value="flagged" {% if status_filter == 'flagged' %}selected{% endif %}>Flagged</option>
+                    <option value="dismissed" {% if status_filter == 'dismissed' %}selected{% endif %}>Dismissed</option>
+                </select>
+            </label>
+            <label>
+                Risk Level
+                <select name="risk">
+                    <option value="">All</option>
+                    <option value="high" {% if risk_filter == 'high' %}selected{% endif %}>High</option>
+                    <option value="medium" {% if risk_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="low" {% if risk_filter == 'low' %}selected{% endif %}>Low</option>
+                    <option value="none" {% if risk_filter == 'none' %}selected{% endif %}>None</option>
+                </select>
+            </label>
+            <label>
+                &nbsp;
+                <button type="submit">Apply</button>
+            </label>
+        </div>
+    </form>
+</details>
+
+<!-- Patent Table -->
+{% if patents_with_analysis %}
+<figure>
+<table>
+    <thead>
+        <tr>
+            <th class="thumb-col"></th>
+            <th>Patent Number</th>
+            <th>Title</th>
+            <th>Issue Date</th>
+            <th>PGR Deadline</th>
+            <th>Assignee</th>
+            <th>AI Score</th>
+            <th>Risk</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for patent, analysis in patents_with_analysis %}
+        <tr>
+            <td class="thumb-cell"><img class="patent-thumb" src="{{ url_for('main.api_patent_image', patent_number=patent.patent_number) }}" alt="" loading="lazy" onerror="this.style.display='none'"></td>
+            <td><a href="{{ patent.uspto_url }}" target="_blank">{{ patent.patent_number }}</a></td>
+            <td><a href="{{ url_for('main.patent_detail', patent_number=patent.patent_number) }}">{{ patent.title[:40] }}{% if patent.title|length > 40 %}...{% endif %}</a></td>
+            <td>{{ patent.issue_date.strftime('%Y-%m-%d') }}</td>
+            <td class="{% if patent.pgr_months_remaining < 3 %}deadline-urgent{% elif patent.pgr_months_remaining < 6 %}deadline-warning{% else %}deadline-ok{% endif %}">
+                {{ patent.pgr_deadline.strftime('%Y-%m-%d') }}
+                <small>({{ "%.1f"|format(patent.pgr_months_remaining) }}mo)</small>
+            </td>
+            <td>{% if patent.assignee %}{{ patent.assignee[:25] }}{% if patent.assignee|length > 25 %}...{% endif %}{% elif patent.inventors %}{{ patent.inventors[0][:25] }}{% if patent.inventors[0]|length > 25 %}...{% endif %}{% endif %}</td>
+            <td>
+                {% if analysis %}
+                <span class="score-badge score-{{ analysis.risk_level }}">{{ analysis.similarity_score }}%</span>
+                {% else %}
+                <span class="score-badge score-pending">--</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if analysis %}
+                <span class="risk-label risk-{{ analysis.risk_level }}">{{ analysis.risk_level|upper }}</span>
+                {% else %}
+                --
+                {% endif %}
+            </td>
+            <td><span class="status-badge status-{{ patent.status }}">{{ patent.status }}</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<nav>
+    <ul>
+        {% if page > 1 %}
+        <li><a href="{{ url_for('main.patent_list', page=page-1, status=status_filter, risk=risk_filter) }}">&laquo; Previous</a></li>
+        {% endif %}
+        <li><span>Page {{ page }} of {{ total_pages }}</span></li>
+        {% if page < total_pages %}
+        <li><a href="{{ url_for('main.patent_list', page=page+1, status=status_filter, risk=risk_filter) }}">Next &raquo;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<p>No patents found matching the selected filters.</p>
+{% endif %}
+{% endblock %}

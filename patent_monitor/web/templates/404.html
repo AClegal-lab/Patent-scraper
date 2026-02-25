@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Not Found - Patent Monitor{% endblock %}
+
+{% block content %}
+<article>
+    <header>Not Found</header>
+    <p>{{ message or "The requested page was not found." }}</p>
+    <p><a href="{{ url_for('main.dashboard') }}">&larr; Back to Dashboard</a></p>
+</article>
+{% endblock %}
